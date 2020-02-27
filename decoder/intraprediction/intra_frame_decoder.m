@@ -21,8 +21,8 @@ for i=1:blockSize:height
             %initialize decoded PU
             prediction_unit = zeros(blockSize);
             %find the reference samples and do predictions
-            left_ref = inverseTransformBlock(i:i+blockSize-1,j-1); %left reference samples
-            top_ref = inverseTransformBlock(i-1,j-1:j+blockSize-1); %top reference samples
+            left_ref = decodedIntraFrame(i:i+blockSize-1,j-1); %left reference samples
+            top_ref = decodedIntraFrame(i-1,j-1:j+blockSize-1); %top reference samples
             predictionMode = predictionModes(m_index_x,m_index_y);
             predOut = mode_selection(left_ref, top_ref, prediction_unit,blockSize,predictionMode);
             %insert the decoded PU into the decoded Frame after adding the

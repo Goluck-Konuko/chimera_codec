@@ -60,7 +60,7 @@ for frame=1:nFrames-1 %loop through the entire sequence
     if strcmp(type,'iframe')%decode intra-predicted frames
         decodedIntraFrame = intra_frame_decoder(inverseTransformBlock, predictionModes,blockSize);
        %Adjust pixel values to fit [0 255]
-        decoded_sequence.(frameName) = pixel_range(decodedIntraFrame);
+        decoded_sequence.(frameName) = decodedIntraFrame;
         if profile==1 %set the iframe to the decoder buffer as the current reference
            referenceFrame = decodedIntraFrame; 
         end
