@@ -5,7 +5,7 @@ if nargin==4 %call during encoding loop
     minCost = 1500000;
     predOut = zeros(blockSize);
     selectedMode = 5;
-    for i=1:4
+    for i=1:3
         if i==1 %perform DC prediction
             pred = dc_prediction(left, top,blockSize); %perform prediction
         elseif i==2 %perform Planar prediction

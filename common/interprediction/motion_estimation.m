@@ -8,8 +8,6 @@ function [mvf,MAD] = motion_estimation(currentFrame, referenceFrame, brow, bcol)
 %    Author: Goluck and Corentin
 [rows, cols]=size(currentFrame);
 totalSAD = 0;
-alpha= 0.01;
-rate = 10000;
 % Macroblocks scan
 for r=1:brow:rows
     for c=1:bcol:cols        
@@ -19,8 +17,7 @@ for r=1:brow:rows
         dcolmin=0; drowmin=0;
         dcolmin_new=0; drowmin_new=0; 
         % Best cost initialized at the highest possible value
-        SADmin=brow*bcol*256*256; 
-%         costMin = 1500000;
+        SADmin=brow*bcol*256*256;       
         % That's where hexagon search comes in:
         % Large hexagon pattern 
         LHP = [0 0; 0 -2; -2 -1; -2 1; 0 2; 2 1; 2 -1];      
@@ -34,20 +31,13 @@ for r=1:brow:rows
                  % Reference macroblock
                  R=referenceFrame(r+drow:r+drow+brow-1, c+dcol:c+dcol+bcol-1);
                  SAD=sum(sum(abs(B-R)));
-                 MSE = ((abs(B-R))^2)/(rows*cols);
-                 cost = MSE + alpha*rate;
                  % If current candidate is better than previous
                  % best candidate, than update the best candidate
-%                  if (SAD<costMin) 
-%                      costMin=cost;
-%                      dcolmin=dcol;
-%                      drowmin=drow;
-%                  end
-                  if (SAD<SADmin)
-                       SADmin=SAD;
-                       dcolmin_new=dcol;
-                       drowmin_new=drow;
-                  end
+                 if (SAD<SADmin) 
+                     SADmin=SAD;
+                     dcolmin=dcol;
+                     drowmin=drow;
+                 end
             end %  
         end % loop on candidate vectors
         % Iterate this step as long as central is not the optimal
@@ -79,15 +69,8 @@ for r=1:brow:rows
                          % Reference macroblock
                          R=referenceFrame(r+drow:r+drow+brow-1, c+dcol:c+dcol+bcol-1);
                          SAD=sum(sum(abs(B-R)));
-                         MSE = ((abs(B-R))^2)/(rows*cols);
-                         cost = MSE + alpha*rate;
                          % If current candidate is better than previous
                          % best candidate, than update the best candidate
-%                          if (cost<costMin)
-%                              costMin=cost;
-%                              dcolmin=dcol;
-%                              drowmin=drow;
-%                          end
                          if (SAD<SADmin) 
                              SADmin=SAD;
                              dcolmin_new=dcol;
@@ -116,15 +99,8 @@ for r=1:brow:rows
                  % Reference macroblock
                  R=referenceFrame(r+drow:r+drow+brow-1, c+dcol:c+dcol+bcol-1);
                  SAD=sum(sum(abs(B-R)));
-                 MSE = ((abs(B-R))^2)/(rows*cols);
-                 cost = MSE + alpha*rate;
                  % If current candidate is better than previous
                  % best candidate, than update the best candidate
-%                  if (cost<costMin) 
-%                      costMin=cost;
-%                      dcolmin=dcol;
-%                      drowmin=drow;
-%                  end
                  if (SAD<SADmin)
                      SADmin=SAD;
                      dcolmin=dcol;
