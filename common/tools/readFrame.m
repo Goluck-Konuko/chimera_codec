@@ -228,5 +228,3 @@ if isfield(format, 'output'),
         color = 0;
     end
 end
-
-% coco style
