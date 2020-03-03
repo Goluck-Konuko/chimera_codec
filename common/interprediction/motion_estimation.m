@@ -17,11 +17,21 @@ for r=1:brow:rows
         dcolmin=0; drowmin=0;
         dcolmin_new=0; drowmin_new=0; 
         % Best cost initialized at the highest possible value
-        SADmin=brow*bcol*256*256;       
+        costmin=brow*bcol*256*256;       
         % That's where hexagon search comes in:
         % Large hexagon pattern 
         LHP = [0 0; 0 -2; -2 -1; -2 1; 0 2; 2 1; 2 -1];      
- 
+        % Average of neighboring up and left vectors 
+        if ((r==1)&&(c~=1))
+          avgmvf(1) = mvf(r,c-bcol,1);
+          avgmvf(2) = mvf(r,c-bcol,2);
+        elseif ((r~=1)&&(c==1))
+          avgmvf(1) = mvf(r-brow,c,1);
+          avgmvf(2) = mvf(r-brow,c,2);
+        else 
+          avgmvf(1) = 0.5* (mvf(r,c-bcol,1)+mvf(r-brow,c,1));
+          avgmvf(2) = 0.5* (mvf(r,c-bcol,2)+mvf(r-brow,c,2));
+        end
         % loop on candidate motion vector v = (dcol,drow), first iteration 
         for i = 1:7
             drow = LHP(i,1);
@@ -31,10 +41,20 @@ for r=1:brow:rows
                  % Reference macroblock
                  R=referenceFrame(r+drow:r+drow+brow-1, c+dcol:c+dcol+bcol-1);
                  SAD=sum(sum(abs(B-R)));
+                 % Regularization 
+                 vd(1) = drow-avgmvf(1); 
+                 vd(2) = dcol-avgmvf(2);
+                 vd2 = vd(1).^2 + vd(2).^2;
+                 RegTerm = lambda*vd2;
+                 if ((r==1)&&(c==1))
+                   RegTerm = 0;
+                 end 
+                 % Function to minimize 
+                 cost = SAD+RegTerm;
                  % If current candidate is better than previous
                  % best candidate, than update the best candidate
-                 if (SAD<SADmin) 
-                     SADmin=SAD;
+                 if (cost<costmin) 
+                     costmin=cost;
                      dcolmin=dcol;
                      drowmin=drow;
                  end
@@ -69,10 +89,20 @@ for r=1:brow:rows
                          % Reference macroblock
                          R=referenceFrame(r+drow:r+drow+brow-1, c+dcol:c+dcol+bcol-1);
                          SAD=sum(sum(abs(B-R)));
+                         % Regularization 
+                         vd(1) = drow-avgmvf(1); 
+                         vd(2) = dcol-avgmvf(2);
+                         vd2 = vd(1).^2 + vd(2).^2;
+                         RegTerm = lambda*vd2;
+                         if ((r==1)&&(c==1))
+                           RegTerm = 0;
+                         end 
+                         % Function to minimize 
+                         cost = SAD+RegTerm;
                          % If current candidate is better than previous
                          % best candidate, than update the best candidate
-                         if (SAD<SADmin) 
-                             SADmin=SAD;
+                         if (cost<costmin) 
+                             costmin=cost;
                              dcolmin_new=dcol;
                              drowmin_new=drow;
                          end
@@ -99,10 +129,20 @@ for r=1:brow:rows
                  % Reference macroblock
                  R=referenceFrame(r+drow:r+drow+brow-1, c+dcol:c+dcol+bcol-1);
                  SAD=sum(sum(abs(B-R)));
+                 % Regularization 
+                 vd(1) = drow-avgmvf(1); 
+                 vd(2) = dcol-avgmvf(2);
+                 vd2 = vd(1).^2 + vd(2).^2;
+                 RegTerm = lambda*vd2;
+                 if ((r==1)&&(c==1))
+                   RegTerm = 0;
+                 end 
+                 % Function to minimize 
+                 cost = SAD+RegTerm;
                  % If current candidate is better than previous
                  % best candidate, than update the best candidate
-                 if (SAD<SADmin)
-                     SADmin=SAD;
+                 if (cost<costmin)
+                     costmin=cost;
                      dcolmin=dcol;
                      drowmin=drow;
                  end
@@ -111,7 +151,7 @@ for r=1:brow:rows
         % Store the best MV and the associated cost
         mvf(r:r+brow-1,c:c+bcol-1,1)=drowmin;
         mvf(r:r+brow-1,c:c+bcol-1,2)=dcolmin;
-        totalSAD = totalSAD + SADmin;
+        totalSAD = totalSAD + SADmin; %% BIG QUESTION ABOUT WHAT TO DO WITH SADMIN? COSTMIN?
     end  
 end % loop on macroblocks
 MAD = totalSAD /rows /cols;
