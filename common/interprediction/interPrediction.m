@@ -6,7 +6,7 @@ function [residualBlock, mvf] = interPrediction(currentFrame,referenceFrame,bloc
     %initialize the residual block
     %residualBlock = zeros(height_p,width_p);
     %compute the motion vectors
-    [mvf, MAD] = motion_estimation(currentFrame, referenceFrame,blockSize, blockSize);
+    [mvf, meancost] = motion_estimation(currentFrame, referenceFrame,blockSize, blockSize);
     %perform motion compensation
     motionCompenstatedFrame = motion_compensation(referenceFrame, mvf);
     %calculate the block residuals
