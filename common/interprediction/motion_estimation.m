@@ -18,6 +18,10 @@ end
 
 [rows, cols]=size(currentFrame);
 totalcost = 0;
+avgmvf = zeros(2);
+mvf = zeros(rows,cols,2);
+% Value of tuned regularization parameter 
+lambda = 0.1;                        % SHOULD IT BE AN ARGUMENT OF THE FUNCTION? --> Not yet
 
 % Apply the desired search strategy
 % Full search
@@ -38,7 +42,7 @@ if (searchStrategy==0)
             elseif ((r~=1)&&(c==1))
               avgmvf(1) = mvf(r-brow,c,1);
               avgmvf(2) = mvf(r-brow,c,2);
-            else 
+            elseif ((r~=1)&&(c~=1)) 
               avgmvf(1) = 0.5* (mvf(r,c-bcol,1)+mvf(r-brow,c,1));
               avgmvf(2) = 0.5* (mvf(r,c-bcol,2)+mvf(r-brow,c,2));
             end
@@ -102,7 +106,7 @@ if (searchStrategy==1)
             elseif ((r~=1)&&(c==1))
               avgmvf(1) = mvf(r-brow,c,1);
               avgmvf(2) = mvf(r-brow,c,2);
-            else 
+            elseif ((r~=1)&&(c~=1)) 
               avgmvf(1) = 0.5* (mvf(r,c-bcol,1)+mvf(r-brow,c,1));
               avgmvf(2) = 0.5* (mvf(r,c-bcol,2)+mvf(r-brow,c,2));
             end
