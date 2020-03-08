@@ -1,5 +1,5 @@
 %%
-colorspace = 'yuv';
+colorspace = 'y';
 sequenceName = 'flower'; 
 resolution = 'cif';
 profile  =  1; %0-Only I frames,1- I and P frames,2- I,B,P,3- I,B,B,P 

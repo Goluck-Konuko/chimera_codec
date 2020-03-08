@@ -73,7 +73,7 @@ function [decodedFrame, newReferenceFrame,finalResidualBlock,modes,mvf] = encode
             
             %generate the decoded frame after transformation and
             %quantization
-            [decodedFrame,referenceFrame] = encoding_loop(residualBlocks,frameName,referenceFrame,tuSize,delta_iframe,delta_pframe,modes,mvf,blockSize,profile);
+            [decodedFrame,finalResidualBlock,referenceFrame] = encoding_loop(residualBlocks,frameName,referenceFrame,tuSize,delta_iframe,delta_pframe,modes,mvf,blockSize,profile);
             newReferenceFrame = referenceFrame;
         else
             %encode a yuv Pframe
@@ -96,8 +96,7 @@ function [decodedFrame, newReferenceFrame,finalResidualBlock,modes,mvf] = encode
 %             prediction_modes_chroma_2.(frameName) = predictionModesChroma2;
             %generate the decoded frame after transformation and
             %quantization
-            [decodedFrame,residualBlock,referenceFrame] = encoding_loop(residualBlocks,frameName,referenceFrame,tuSize,delta_iframe,delta_pframe,modes,mvf,blockSize,profile);
-            finalResidualBlock = residualBlock;
+            [decodedFrame,finalResidualBlock,referenceFrame] = encoding_loop(residualBlocks,frameName,referenceFrame,tuSize,delta_iframe,delta_pframe,modes,mvf,blockSize,profile);
         end
     end 
 end

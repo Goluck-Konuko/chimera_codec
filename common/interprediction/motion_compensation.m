@@ -4,7 +4,7 @@ function motionCompenstatedFrame = motion_compensation(ref,mvf)
 %    using the vector field stored in MVF. This field should be dense, i.e.
 %    one vector per pixel)
 %
-[rows, cols] = size(ref);
+[rows, cols] = size(ref(:,:,1));
 motionCompenstatedFrame=zeros(rows,cols);
 for r=1:rows
     for c=1:cols
