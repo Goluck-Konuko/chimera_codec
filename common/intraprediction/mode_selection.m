@@ -4,7 +4,6 @@ if nargin==5 %call during encoding loop
     rate = 10000;
     minCost = 15000000;
     predOut = zeros(blockSize);
-<<<<<<< HEAD
     selectedMode = 0;
     if strcmp(class,'luma')
         for i=1:11
@@ -25,18 +24,6 @@ if nargin==5 %call during encoding loop
                 minCost = cost; %update the R(D) cost
                 predOut  = pred;
             end
-=======
-    selectedMode = 5;
-    for i=1:3
-        if i==1 %perform DC prediction
-            pred = dc_prediction(left, top,blockSize); %perform prediction
-        elseif i==2 %perform Planar prediction
-            pred = planar_prediction(left, top,blockSize);
-        elseif i==3 %perform vertical prediction
-            pred = angular_prediction(left, top,blockSize,i);
-        else %perform horizontal prediction
-            pred = angular_prediction(left, top,blockSize,i);
->>>>>>> 353dd9276101782915a8054642cd552d99b244ae
         end
     else
         %perform prediction for the chroma samples

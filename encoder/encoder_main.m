@@ -48,7 +48,6 @@ for frame=1:nFrames-1 %loop through the entire sequence
     [decodedFrame, newReferenceFrame,residualBlock,modes,mvf]  = encode(currentFrame, referenceFrame,frameName, colorspace,blockSize,tuSize,delta_iframe,delta_pframe,profile);
     decoded_sequence.(frameName) = decodedFrame;
     residuals.(frameName) = residualBlock;
-    
     if strcmp(strtok(frameName,'_'),'iframe')
         referenceFrame = newReferenceFrame;%update the reference frame
         prediction_modes.(frameName) = modes;
