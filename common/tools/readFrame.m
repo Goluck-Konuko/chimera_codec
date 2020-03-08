@@ -227,4 +227,4 @@ if isfield(format, 'output'),
     if isequal(format.output,'y'),
         color = 0;
     end
-end      
+end
