@@ -1,4 +1,4 @@
-function decodedIntraFrame = intra_frame_decoder(inverseTransformBlock, predictionModes,blockSize)
+function decodedIntraFrame = intra_frame_decoder(inverseTransformBlock, predictionModes,blockSize,class)
 [height, width] = size(inverseTransformBlock);
 %initialize
 decodedIntraFrame = zeros(height,width);
@@ -24,7 +24,7 @@ for i=1:blockSize:height
             left_ref = decodedIntraFrame(i:i+blockSize-1,j-1); %left reference samples
             top_ref = decodedIntraFrame(i-1,j-1:j+blockSize-1); %top reference samples
             predictionMode = predictionModes(m_index_x,m_index_y);
-            predOut = mode_selection(left_ref, top_ref, prediction_unit,blockSize,predictionMode);
+            predOut = mode_selection(left_ref, top_ref, prediction_unit,blockSize,class,predictionMode);
             %insert the decoded PU into the decoded Frame after adding the
             %residuals
             decodedIntraFrame(i:i+blockSize-1,j:j+blockSize-1) = predOut + inverseTransformBlock(i:i+blockSize-1,j:j+blockSize-1);

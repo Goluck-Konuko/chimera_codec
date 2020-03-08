@@ -4,21 +4,27 @@ sequenceName = 'flower';
 resolution = 'cif';
 profile  =  1; %0-Only I frames,1- I and P frames,2- I,B,P,3- I,B,B,P 
 fileName = [sequenceName '_' resolution '.' colorspace];
-nFrames = 10;
+nFrames = 3;
 height = 288;
 width = 352;
 bitDepth = 8;
 gopSize = 10;
+gopType = 0; %closed GOP | set to 1 for open GOP
 blockSize = 16; %prediction block size
 tuSize = 8; %Transform block size
-delta_iframe = 16;
+delta_iframe = 8;
 delta_pframe = 16;
 
-% %insert python script to python path
-% scriptPath = fileparts(which('hevc_intrapredictor.py','hevc_augmenter.py'));
-% if count(py.sys.path,scriptPath)==0
-%     insert(py.sys.path,int32(0),scriptPath);
-% end
+tic
+%create the video parameter set
+vps.profile = profile;
+vps.bitDepth = bitDepth;
+vps.gopSize = gopSize;
+vps.height = height;
+vps.width = width;
+vps.nFrames = nFrames;
+
+%create the Sequence Parameter set
 
 %ENCODING LOOP
 gopCount = 0;
@@ -34,50 +40,28 @@ for frame=1:nFrames-1 %loop through the entire sequence
             gopCount = gopCount + 1;
         end
     end
-    %perform predictions for the current frame
-    type = strtok(frameName,'_');
-    if strcmp(type,'pframe') %set the reference
-        [residualBlock, mvf] = interPrediction(currentFrame, referenceFrame,blockSize);
-        %store data for possible out-of-loop entropy coding
-        residuals.(frameName) = residualBlock;
-        mvfs.(frameName) = mvf;
+    %create the PPS
+    pps.type = frameName;
+    pps.number = frame;
+    pps.ref = frame-1;
+    
+    [decodedFrame, newReferenceFrame,residualBlock,modes,mvf]  = encode(currentFrame, referenceFrame,frameName, colorspace,blockSize,tuSize,delta_iframe,delta_pframe,profile);
+    decoded_sequence.(frameName) = decodedFrame;
+    residuals.(frameName) = residualBlock;
+    
+    if strcmp(strtok(frameName,'_'),'iframe')
+        referenceFrame = newReferenceFrame;%update the reference frame
+        prediction_modes.(frameName) = modes;
     else
-        [residualBlock, predictionModes] = intraPrediction(currentFrame,frameName,blockSize);
-        %store data for possible out-of-loop entropy coding
-        residuals.(frameName) = residualBlock;
-        prediction_modes.(frameName) = predictionModes;
-    end
-    %compute the transforms on each block
-    transformBlock = transformer(residualBlock,tuSize);
-    %Quantize the transdform coefficients
-    %Use different QP for the Iframes??
-    [quantizedTransformBlock,reconstructedBlock, filter] = predictive_quantizer(transformBlock,frameName,tuSize, delta_iframe, delta_pframe);
-    %Decoding loop
-    %inverseQP
-    reconstructedTransformBlock = inverse_predictive_quantizer(quantizedTransformBlock,tuSize,delta_iframe,delta_pframe,frameName,filter);
-    %IDCT
-    inverseTransformBlock = inverse_transformer(reconstructedBlock,tuSize);
-    if strcmp(type,'iframe')%decode intra-predicted frames
-        decodedIntraFrame = intra_frame_decoder(inverseTransformBlock, predictionModes,blockSize);
-       %Adjust pixel values to fit [0 255]
-        decoded_sequence.(frameName) = decodedIntraFrame;
-        if profile==1 %set the iframe to the decoder buffer as the current reference
-           referenceFrame = decodedIntraFrame; 
-        end
-    else %decode inter-predicted frames
-        decodedInterFrame = inter_frame_decoder(inverseTransformBlock,referenceFrame, mvf, blockSize);
-        decoded_sequence.(frameName) = decodedInterFrame;
+        %annex this condition to add the mvf block for coding
+       mvfs.(frameName) = mvf;
+       if strcmp(colorspace, 'yuv')
+           prediction_modes.(frameName) = modes; %for the chroma channels
+       end
+       if gopType==1
+           referenceFrame = newReferenceFrame;%update the reference frame
+       end
     end
     %Encode the quantized values into a bitstream
 end
-% %compute the residuals and motion vectors(pframes) for all the frames
-% [residuals,mvfs] = predictor(gopSequence, blockSize);
-% %compute the dct transforms of the residuals
-% transformBlocks = batch_transformer(residuals, tuSize);
-% %Quantize the transformed residuals
-% quantizedTransformBlocks = batch_quantizer(transformBlocks,delta_iframe, delta_pframe);
-% %-for each GOP create a SPS
-% %--create PPS
-% %--Compose NALU for frame i.e header and payload
-
-
+toc
