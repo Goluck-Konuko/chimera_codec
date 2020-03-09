@@ -1,4 +1,4 @@
-function [codeword] = exp_golomb_alpha(Values)
+function [codeword] = exp_golomb(Values)
 % Exp_golomb coding for each element in a list of values
 % Goluck and Corentin
 
