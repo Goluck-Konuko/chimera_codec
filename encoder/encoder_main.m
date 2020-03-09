@@ -4,7 +4,7 @@ sequenceName = 'flower';
 resolution = 'cif';
 profile  =  1; %0-Only I frames,1- I and P frames,2- I,B,P,3- I,B,B,P 
 fileName = [sequenceName '_' resolution '.' colorspace];
-nFrames = 3;
+nFrames = 5;
 height = 288;
 width = 352;
 bitDepth = 8;
@@ -14,6 +14,9 @@ blockSize = 16; %prediction block size
 tuSize = 8; %Transform block size
 delta_iframe = 8;
 delta_pframe = 16;
+searchStrategy = 1;
+searchWindow = 16;
+
 
 tic
 %create the video parameter set
@@ -23,6 +26,8 @@ vps.gopSize = gopSize;
 vps.height = height;
 vps.width = width;
 vps.nFrames = nFrames;
+% vps.searchStrategy = 1;
+% vps.searchWindow = 16;
 
 %create the Sequence Parameter set
 %ENCODING LOOP
