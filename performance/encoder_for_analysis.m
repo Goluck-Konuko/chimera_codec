@@ -1,21 +1,23 @@
-%%
-colorspace = 'yuv';
-sequenceName = 'flower'; 
-resolution = 'cif';
-profile  =  1; %0-Only I frames,1- I and P frames,2- I,B,P,3- I,B,B,P 
+function [vps,pps,decoded_sequence,residuals,prediction_modes,mvfs] = encoder_for_analysis(colorspace,sequenceName,resolution,profile,...
+    nFrames,height,width,bitDepth,gopSize,gopType,blockSize,tuSize,delta_iframe,delta_pframe)
+% Useful for further performance analysis
+
+% colorspace = 'yuv';
+% sequenceName = 'flower'; 
+% resolution = 'cif';
+% profile  =  1; %0-Only I frames,1- I and P frames,2- I,B,P,3- I,B,B,P 
 fileName = [sequenceName '_' resolution '.' colorspace];
-nFrames = 5;
-height = 288;
-width = 352;
-bitDepth = 8;
-gopSize = 10;
-gopType = 0; %closed GOP | set to 1 for open GOP
-blockSize = 16; %prediction block size
-tuSize = 8; %Transform block size
-delta_iframe = 8;
-delta_pframe = 16;
-searchStrategy = 1;
-searchWindow = 16;
+% nFrames = 5;
+% height = 288;
+% width = 352;
+% bitDepth = 8;
+% gopSize = 10;
+% gopType = 0; %closed GOP | set to 1 for open GOP
+% blockSize = 16; %prediction block size
+% tuSize = 8; %Transform block size
+% delta_iframe = 8;
+% delta_pframe = 16;
+
 
 
 tic
@@ -26,8 +28,8 @@ vps.gopSize = gopSize;
 vps.height = height;
 vps.width = width;
 vps.nFrames = nFrames;
-% vps.searchStrategy = 1;
-% vps.searchWindow = 16;
+% vps.searchStrategy = searchStrategy;
+% vps.searchWindow = searchWindow;
 
 %create the Sequence Parameter set
 %ENCODING LOOP
@@ -48,6 +50,7 @@ for frame=1:nFrames-1 %loop through the entire sequence
     pps.type = frameName;
     pps.number = frame;
     pps.ref = frame-1;
+    
     
     [decodedFrame, newReferenceFrame,residualBlock,modes,mvf]  = encode(currentFrame, referenceFrame,frameName, colorspace,blockSize,tuSize,delta_iframe,delta_pframe,profile);
     decoded_sequence.(frameName) = decodedFrame;
