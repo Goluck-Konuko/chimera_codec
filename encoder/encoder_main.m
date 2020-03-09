@@ -26,8 +26,6 @@ vps.gopSize = gopSize;
 vps.height = height;
 vps.width = width;
 vps.nFrames = nFrames;
-% vps.searchStrategy = 1;
-% vps.searchWindow = 16;
 
 %create the Sequence Parameter set
 %ENCODING LOOP
@@ -49,7 +47,7 @@ for frame=1:nFrames-1 %loop through the entire sequence
     pps.number = frame;
     pps.ref = frame-1;
     
-    [decodedFrame, newReferenceFrame,residualBlock,modes,mvf]  = encode(currentFrame, referenceFrame,frameName, colorspace,blockSize,tuSize,delta_iframe,delta_pframe,profile);
+    [decodedFrame, newReferenceFrame,residualBlock,modes,mvf]  = encode(currentFrame, referenceFrame,frameName, colorspace,blockSize,tuSize,delta_iframe,delta_pframe,profile,searchStrategy,searchWindow);
     decoded_sequence.(frameName) = decodedFrame;
     residuals.(frameName) = residualBlock;
     if strcmp(strtok(frameName,'_'),'iframe')

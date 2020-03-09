@@ -1,4 +1,4 @@
-function [decodedFrame, newReferenceFrame,finalResidualBlock,modes,mvf] = encode(currentFrame, referenceFrame,frameName, colorspace,blockSize,tuSize,delta_iframe,delta_pframe,profile)
+function [decodedFrame, newReferenceFrame,finalResidualBlock,modes,mvf] = encode(currentFrame, referenceFrame,frameName, colorspace,blockSize,tuSize,delta_iframe,delta_pframe,profile,searchStrategy,searchWindow)
     %perform predictions for the current frame
     type = strtok(frameName,'_');
     %Initializations
@@ -20,7 +20,7 @@ function [decodedFrame, newReferenceFrame,finalResidualBlock,modes,mvf] = encode
         else
             %encode a Pframe
             %just interprediction
-            [residualBlockLuma, mvf] = interPrediction(currentFrame, referenceFrame,blockSize);
+            [residualBlockLuma, mvf] = interPrediction(currentFrame, referenceFrame,blockSize,searchStrategy,searchWindow);
         end
         %compute the transforms on each block
         transformBlockLuma = transformer(residualBlockLuma,tuSize);
@@ -55,15 +55,7 @@ function [decodedFrame, newReferenceFrame,finalResidualBlock,modes,mvf] = encode
             [residualBlockChroma1,predictionModesChroma1]  = intraPrediction(currentFrame(:,:,2),blockSize,'chroma');
             [residualBlockChroma2,predictionModesChroma2]  = intraPrediction(currentFrame(:,:,3),blockSize,'chroma');
             
-            %add residuals to the already predicted frames
-%             residuals_luma.(frameName) = residualBlockLuma;
-%             residuals_chroma_1.(frameName) = residualBlockChroma1;
-%             residuals_chroma_2.(frameName) = residualBlockChroma2;
-            
-            %store the prediction modes for each TU
-%             prediction_modes_luma.(frameName) = predictionModesLuma;
-%             prediction_modes_chroma_1.(frameName) = predictionModesChroma1;
-%             prediction_modes_chroma_2.(frameName) = predictionModesChroma2;
+            %Data aggregation
             modes(:,:,1) = predictionModesLuma;
             modes(:,:,2) = predictionModesChroma1;
             modes(:,:,3) = predictionModesChroma2;
@@ -78,7 +70,7 @@ function [decodedFrame, newReferenceFrame,finalResidualBlock,modes,mvf] = encode
         else
             %encode a yuv Pframe
             %interprediction for the luma channel
-            [residualBlockLuma, mvf] = interPrediction(currentFrame(:,:,1), referenceFrame,blockSize);
+            [residualBlockLuma, mvf] = interPrediction(currentFrame(:,:,1), referenceFrame,blockSize,searchStrategy,searchWindow);
             %intra_prediction for the chroma channels
             [residualBlockChroma1,predictionModesChroma1]  = intraPrediction(currentFrame(:,:,2),blockSize,'chroma');
             [residualBlockChroma2,predictionModesChroma2]  = intraPrediction(currentFrame(:,:,3),blockSize,'chroma');
@@ -87,13 +79,6 @@ function [decodedFrame, newReferenceFrame,finalResidualBlock,modes,mvf] = encode
             residualBlocks(:,:,1) = residualBlockLuma;
             residualBlocks(:,:,2) = residualBlockChroma1;
             residualBlocks(:,:,3) = residualBlockChroma2;
-            %add data to structs
-%             mvfs.(frameName) = mvf;
-%             residuals_luma.(frameName) = residualBlockLuma;
-%             residuals_chroma_1.(frameName) = residualBlockChroma1;
-%             residuals_chroma_2.(frameName) = residualBlockChroma2;
-%             prediction_modes_chroma_1.(frameName) = predictionModesChroma1;
-%             prediction_modes_chroma_2.(frameName) = predictionModesChroma2;
             %generate the decoded frame after transformation and
             %quantization
             [decodedFrame,finalResidualBlock,referenceFrame] = encoding_loop(residualBlocks,frameName,referenceFrame,tuSize,delta_iframe,delta_pframe,modes,mvf,blockSize,profile);

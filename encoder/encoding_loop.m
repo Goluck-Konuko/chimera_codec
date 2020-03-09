@@ -9,9 +9,8 @@ function [decodedFrame,residualBlock, referenceFrame] = encoding_loop(residualBl
         [currentQuantizedTransformBlockLuma,reconstructedBlockLuma, filter] = predictive_quantizer(transformBlockLuma,frameName,tuSize, delta_iframe, delta_pframe);
         [currentQuantizedTransformBlockChroma1,reconstructedBlockChroma1, ~] = predictive_quantizer(transformBlockChroma1,frameName,tuSize, delta_iframe, delta_pframe);
         [currentQuantizedTransformBlockChroma2,reconstructedBlockChroma2, ~] = predictive_quantizer(transformBlockChroma2,frameName,tuSize, delta_iframe, delta_pframe);
-%         quantizedTransformBlocksLuma.(frameName) = currentQuantizedTransformBlockLuma;
-%         quantizedTransformBlocksChroma_1.(frameName) = currentQuantizedTransformBlockChroma1;
-%         quantizedTransformBlocksChroma_2.(frameName) = currentQuantizedTransformBlockChroma2;
+        
+        
         residualBlock(:,:,1) = currentQuantizedTransformBlockLuma;
         residualBlock(:,:,2) = currentQuantizedTransformBlockChroma1;
         residualBlock(:,:,3) = currentQuantizedTransformBlockChroma2;

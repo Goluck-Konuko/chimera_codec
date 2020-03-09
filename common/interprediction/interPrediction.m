@@ -1,4 +1,4 @@
-function [residualBlock, mvf] = interPrediction(currentFrame,referenceFrame,blockSize)
+function [residualBlock, mvf] = interPrediction(currentFrame,referenceFrame,blockSize,searchStrategy,searchWindow)
     %TODO pad the current  and reference frames to fit the block dimensions
     currentFrame = padding(currentFrame,blockSize);
     referenceFrame = padding(referenceFrame,blockSize); 
@@ -6,7 +6,7 @@ function [residualBlock, mvf] = interPrediction(currentFrame,referenceFrame,bloc
     %initialize the residual block
     %residualBlock = zeros(height_p,width_p);
     %compute the motion vectors
-    [mvf, meancost] = motion_estimation(currentFrame, referenceFrame,blockSize, blockSize);
+    [mvf, meancost] = motion_estimation(currentFrame, referenceFrame,blockSize, blockSize,searchStrategy,searchWindow);
     %perform motion compensation
     motionCompenstatedFrame = motion_compensation(referenceFrame, mvf);
     %calculate the block residuals

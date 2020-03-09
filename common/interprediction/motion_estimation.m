@@ -8,13 +8,13 @@ function [mvf,meancost] = motion_estimation(currentFrame, referenceFrame, brow, 
 %    [MVF MEANCOST] = ME(...)
 %    Returns the mean cost associated to the output MVF
 %    Author: Goluck and Corentin
-if nargin==4
-    searchStrategy = 1; % hexagon search is set by default
-    searchWindow = 0;
-end
-if nargin==5 % Search window is not mentioned; only used for full search
-    searchWindow = 16;
-end
+% if nargin==5
+%     searchStrategy = 1; % hexagon search is set by default
+%     searchWindow = 0;
+% end
+% if nargin==6 % Search window is not mentioned; only used for full search
+%     searchWindow = 16;
+% end
 
 [rows, cols]=size(currentFrame);
 totalcost = 0;
@@ -27,6 +27,8 @@ lambda = 0.1;                        % SHOULD IT BE AN ARGUMENT OF THE FUNCTION?
 % Full search
 if (searchStrategy==0)
     % Macroblocks scan
+    cur = currentFrame;
+    ref = referenceFrame;
     for r=1:brow:rows
         for c=1:bcol:cols     
             % Macroblock from current image
