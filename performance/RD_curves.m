@@ -29,12 +29,15 @@ blockSize = 16; %prediction block size
 tuSize = 8; %Transform block size
 delta_iframe = 8;
 delta_pframe = 16;
-%% Call encoder for analysis
-%[~,~,decoded_sequence,~,~,~] = encoder_for_analysis(colorspace,sequenceName,resolution,profile,...
-%    nFrames,height,width,bitDepth,gopSize,gopType,blockSize,tuSize,delta_iframe,delta_pframe);
+searchStrategy = 1; % 1 for hexagon search, 0 for full search
+searchWindow = 16; % only used for full search
+%% Call encoder for analysis (necessary for later on)
+[~,~,decoded_sequence,~,~,~] = encoder_for_analysis(colorspace,sequenceName,resolution,profile,...
+    nFrames,height,width,bitDepth,gopSize,gopType,blockSize,tuSize,delta_iframe,delta_pframe,searchStrategy,searchWindow);
 
-%% RD curve varying delta_iframe
 x = uint8(readFrame(fileName,1));
+
+%% RD and PSNR curves varying delta_iframe
 
 dyn = 2^bitDepth;
 nPoints = 10;
@@ -46,7 +49,7 @@ for iDelta = 1:numel(DELTA_IFRAME)
     delta_iframe = DELTA_IFRAME(iDelta);
     R(iDelta) = bitDepth-log2(delta_iframe);
     [~,~,decoded_sequence,~,~,~] = encoder_for_analysis(colorspace,sequenceName,resolution,profile,...
-            nFrames,height,width,bitDepth,gopSize,gopType,blockSize,tuSize,delta_iframe,delta_pframe);
+            nFrames,height,width,bitDepth,gopSize,gopType,blockSize,tuSize,delta_iframe,delta_pframe,searchStrategy,searchWindow);
     XQ = decoded_sequence.iframe_1;
     D(iDelta)=  mean( (x(:)-XQ(:)).^2  ); % Is it also exactly holding for yuv frames?
     PSNR(iDelta) = 10*log10( dyn^2 / D(iDelta) );
@@ -57,5 +60,4 @@ xlabel('Rate [bpp]'); ylabel('D - MSE'); set(h,'LineWidth',2);
 figure; h=plot(R,PSNR, 'o');  title('PSNR(R) curve for first I frame');
 xlabel('Rate [bpp]'); ylabel('PSNR [dB]');
 
-%%
-save D   PSNR
+%% Curves varying 
