@@ -37,7 +37,7 @@ vps.nFrames = nFrames;
 gopCount = 0;
 %initialize the frames
 referenceFrame = zeros(height,width);
-
+mvfs = [];
 nalus = struct();
 for frame=1:nFrames-1 %loop through the entire sequence
     bitstream = [];
