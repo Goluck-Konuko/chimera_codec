@@ -1,5 +1,5 @@
-function [vps,pps,decoded_sequence,residuals,prediction_modes,mvfs] = encoder_for_analysis(colorspace,sequenceName,resolution,profile,...
-    nFrames,height,width,bitDepth,gopSize,gopType,blockSize,tuSize,delta_iframe,delta_pframe)
+function [vps,pps,decoded_sequence,residuals,prediction_modes,mvfs,nalus] = encoder_for_analysis(colorspace,sequenceName,resolution,profile,...
+    nFrames,height,width,bitDepth,gopSize,gopType,blockSize,tuSize,delta_iframe,delta_pframe,searchStrategy,searchWindow)
 % Useful for further performance analysis
 
 % colorspace = 'yuv';
@@ -17,6 +17,8 @@ fileName = [sequenceName '_' resolution '.' colorspace];
 % tuSize = 8; %Transform block size
 % delta_iframe = 8;
 % delta_pframe = 16;
+% searchStrategy = 1;
+% searchWindow = 16;
 
 
 
@@ -28,15 +30,17 @@ vps.gopSize = gopSize;
 vps.height = height;
 vps.width = width;
 vps.nFrames = nFrames;
-% vps.searchStrategy = searchStrategy;
-% vps.searchWindow = searchWindow;
+
 
 %create the Sequence Parameter set
 %ENCODING LOOP
 gopCount = 0;
 %initialize the frames
 referenceFrame = zeros(height,width);
+mvfs = [];
+nalus = struct();
 for frame=1:nFrames-1 %loop through the entire sequence
+    bitstream = [];
     %Organize the video sequence into a sequence of GOPs
     if profile==0
         [currentFrame,frameName] = sequence_parser(fileName,gopCount,gopSize,frame,profile);
@@ -52,22 +56,31 @@ for frame=1:nFrames-1 %loop through the entire sequence
     pps.ref = frame-1;
     
     
-    [decodedFrame, newReferenceFrame,residualBlock,modes,mvf]  = encode(currentFrame, referenceFrame,frameName, colorspace,blockSize,tuSize,delta_iframe,delta_pframe,profile);
+    [decodedFrame, newReferenceFrame,residualBlock,modes,mvf]  = encode(currentFrame, referenceFrame,frameName, colorspace,blockSize,tuSize,delta_iframe,delta_pframe,profile,searchStrategy,searchWindow);
     decoded_sequence.(frameName) = decodedFrame;
     residuals.(frameName) = residualBlock;
+    [nalu] = entropy_coder_residuals(residualBlock,tuSize,colorspace); 
+    bitstream  = [bitstream nalu];
     if strcmp(strtok(frameName,'_'),'iframe')
         referenceFrame = newReferenceFrame;%update the reference frame
         prediction_modes.(frameName) = modes;
+        [nalu_modes] = entropy_coder_modes(modes,colorspace);
+        bitstream  = [bitstream nalu_modes]; %add prediction modes for iframe to bitstream
     else
         %annex this condition to add the mvf block for coding
        mvfs.(frameName) = mvf;
+       [nalu_mvfs] = entropy_coder_mvfs(mvf,blockSize);
+       bitstream  = [bitstream nalu_mvfs]; %add coded mvfs to bitstream
        if strcmp(colorspace, 'yuv')
            prediction_modes.(frameName) = modes; %for the chroma channels
+           [nalu_modes] = entropy_coder_modes(modes,colorspace);
+           bitstream  = [bitstream nalu_modes]; %add prediction modes for chroma channels in pframe to bitstream
        end
        if gopType==1
            referenceFrame = newReferenceFrame;%update the reference frame
        end
     end
-    %Encode the quantized values into a bitstream
+    %ADD the current NALU into a bitstream
+    nalus.(frameName) = bitstream;
 end
 toc

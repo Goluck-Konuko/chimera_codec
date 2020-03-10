@@ -2,7 +2,7 @@
 colorspace = 'yuv';
 sequenceName = 'flower'; 
 resolution = 'cif';
-profile  =  1; %0-Only I frames,1- I and P frames,2- I,B,P,3- I,B,B,P 
+profile  =  0; %0-Only I frames,1- I and P frames,2- I,B,P,3- I,B,B,P 
 fileName = [sequenceName '_' resolution '.' colorspace];
 nFrames = 5;
 height = 288;
@@ -14,7 +14,7 @@ blockSize = 16; %prediction block size
 tuSize = 8; %Transform block size
 delta_iframe = 8;
 delta_pframe = 16;
-searchStrategy = 1;
+searchStrategy = 1; % 0: full search | 1: hexagon search
 searchWindow = 16;
 
 
