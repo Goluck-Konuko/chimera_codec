@@ -6,7 +6,7 @@ if nargin==5 %call during encoding loop
     predOut = zeros(blockSize);
     selectedMode = 0;
     if strcmp(class,'luma')
-        for i=1:11
+        for i=1:4
             if i==1 %perform DC prediction
                 pred = dc_prediction(left, top,blockSize); %perform prediction
             elseif i==2 %perform Planar prediction

@@ -1,4 +1,4 @@
-function [mvf,meancost] = motion_estimation(currentFrame, referenceFrame, brow, bcol, searchStrategy, searchWindow)
+function [mvf,intra_pred_blocks,intra_pred_blocks_locations] = motion_estimation(currentFrame, referenceFrame, brow, bcol, searchStrategy, searchWindow)
 %ME Motion estimation using the specified search strategy
 %    MVF = ME(cur, ref, brow, bcol, searchStrategy, searchWindow);
 %    searchStrategy==0 --> full search; in that case, need also a search window
@@ -20,6 +20,8 @@ function [mvf,meancost] = motion_estimation(currentFrame, referenceFrame, brow, 
 totalcost = 0;
 avgmvf = zeros(2);
 mvf = zeros(rows,cols,2);
+intra_pred_blocks = [];
+intra_pred_blocks_locations = [];
 % Value of tuned regularization parameter 
 lambda = 0.1;                        % SHOULD IT BE AN ARGUMENT OF THE FUNCTION? --> Not yet
 
@@ -29,6 +31,9 @@ if (searchStrategy==0)
     % Macroblocks scan
     cur = currentFrame;
     ref = referenceFrame;
+    average_min_cost = 0; %average mincost interprediction
+    block_count = 1; %number of blocks per frame
+    
     for r=1:brow:rows
         for c=1:bcol:cols     
             % Macroblock from current image
@@ -71,6 +76,21 @@ if (searchStrategy==0)
                         % best candidate, than update the best candidate
                         if (cost<costmin) 
                             costmin=cost;
+                            if cost > 1.5 * average_mincost && average_cost ~=0 
+                                %perform intrapred on block and check SAD
+                                target_block = currentFrame(r:brow-1,c:bcol-1);
+                                left = currentFrame(r:r+brow-1, c-1);
+                                top = currentFrame(r-1, c-1:c+bcol-1);
+                                [pred, mode] = mode_selection(left, top, target_block, brow,'luma');
+                                intraSAD = sum(sum(abs(pred-target_block)));
+                                %if SAD is lower then Include predicted
+                                if intraSAD < SAD
+                                    intra_pred_blocks = [intra_pred_blocks pred];
+                                    intra_pred_blocks_locations = [intra_pred_blocks_locations [r,c]];
+                                end
+                            else
+                                average_mincost = (average_mincost + costmin)/block_count;
+                            end
                             dcolmin=dcol;
                             drowmin=drow;
                         end
@@ -89,6 +109,7 @@ end
 % Hexagon search
 if (searchStrategy==1)
     % Macroblocks scan
+    average_mincost = 0; %average mincost interprediction
     for r=1:brow:rows
         for c=1:bcol:cols        
             % Macroblock from current image
@@ -225,6 +246,23 @@ if (searchStrategy==1)
                          costmin=cost;
                          dcolmin=dcol;
                          drowmin=drow;
+                         if cost > 3 * average_mincost && average_mincost ~= 0 && c > 1 && r > 1
+                             %perform intrapred on block and check SAD
+                             %target_block = currentFrame(r:brow-1,c:bcol-1);
+                             left = currentFrame(r:r+brow-1, c-1);
+                             top = currentFrame(r-1, c-1:c+bcol-1);
+                             [pred, mode] = mode_selection(left, top, B, brow,'luma');
+                             intraSAD = sum(sum(abs(pred-B)));
+%                              fprintf("IntraSAD: %.3f",intraSAD);
+                             %if SAD is lower then include intra-predicted
+                             %block
+                             if intraSAD < SAD
+                                 intra_pred_blocks = [intra_pred_blocks pred];
+                                 intra_pred_blocks_locations = [intra_pred_blocks_locations [r,c]];
+                             end
+                         else
+                             average_mincost = (average_mincost + costmin)/2;
+                         end
                      end
                  end
             end
@@ -235,5 +273,4 @@ if (searchStrategy==1)
         end  
     end % loop on macroblocks
 end
-
 meancost = totalcost /rows /cols;

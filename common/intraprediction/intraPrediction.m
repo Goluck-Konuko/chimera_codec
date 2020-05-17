@@ -34,7 +34,13 @@ for i=1:blockSize:height_p
             prediction_unit = currentFrame(i:i+blockSize-1,j:j+blockSize-1);
             left_ref = currentFrame(i:i+blockSize-1,j-1); %left reference samples
             top_ref = currentFrame(i-1,j-1:j+blockSize-1); %top reference sample
-            [predOut, selectedMode] = mode_selection(left_ref, top_ref, prediction_unit,blockSize,class);
+            if blockSize >= 16
+                [left, top] = filter_reference_array(left_ref, top_ref,blockSize);
+            else
+                left = left_ref;
+                top = top_ref;
+            end
+            [predOut, selectedMode] = mode_selection(left, top, prediction_unit,blockSize,class);
             predictionModes(m_index_x,m_index_y) = selectedMode;
             if m_index_y == width_p/blockSize
                 m_index_y=1;
